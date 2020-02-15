@@ -42,6 +42,7 @@ io.on('connection', function(socket){
 	});
 	socket.on('disconnect', function(){
     if(room) {
+			counts[room]--;
 			socket.to(room).broadcast.emit('disconnected', 'the other player disconnected');
 		}
 	});
