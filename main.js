@@ -8,6 +8,8 @@ var HOLE_WIDTH = 40;		// Width of holes in the block
 var MIN_GAP = 20;			// Minimum distance between holes
 var PLAYER_SIZE = 32;
 var PLAYER_SPEED = 3;
+var SCROLL_SPEED = 1;
+var FALL_SPEED = 2;
 var NUM_FLOORS = Math.ceil(CANVAS_HEIGHT/FLOOR_HEIGHT) + 1;		// Need one extra floor to help phase in and out
 
 // Create a 2d array to hold locations where gaps start for each floor block
@@ -54,7 +56,7 @@ function update() {
 
     // playerOne.x = player.x.clamp(0, CANVAS_WIDTH - player.width);
  
-    floor_offset = floor_offset + 1;
+    floor_offset = floor_offset + SCROLL_SPEED;
  }
 function draw() { 
     //comment
@@ -91,14 +93,45 @@ var playerTwo = {
 
 function move_player1() {
     if (keydown.a) {
-		playerOne.x -= PLAYER_SPEED;
+		playerOne.x = playerOne.x - PLAYER_SPEED;
         if(playerOne.x < 0) playerOne.x = 0;
     }
-
+	
     if (keydown.d) {
-		playerOne.x += PLAYER_SPEED;
+		playerOne.x = playerOne.x + PLAYER_SPEED;
         if(playerOne.x > CANVAS_WIDTH - PLAYER_SIZE) playerOne.x = CANVAS_WIDTH - PLAYER_SIZE;
     }
+	
+	playerOne.y = playerOne.y + FALL_SPEED;
+	for (var i = 0; i < floors.length; i++) {
+		if (collision(0, i * FLOOR_HEIGHT - floor_offset, floors[i][0], BLOCK_HEIGHT, playerOne.x, playerOne.y, playerOne.width, playerOne.height)) {
+			if (playerOne.y + playerOne.height - (i * FLOOR_HEIGHT - floor_offset) <= FALL_SPEED + SCROLL_SPEED) {
+				playerOne.y = i * FLOOR_HEIGHT - floor_offset - playerOne.height;
+			}
+			else {
+				playerOne.x = floors[i][0];
+			}
+		}
+		else if (collision(floors[i][0] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset, floors[i][1] - floors[i][0] - HOLE_WIDTH, BLOCK_HEIGHT, playerOne.x, playerOne.y, playerOne.width, playerOne.height)) {
+			if (playerOne.y + playerOne.height - (i * FLOOR_HEIGHT - floor_offset) <= FALL_SPEED + SCROLL_SPEED) {
+				playerOne.y = i * FLOOR_HEIGHT - floor_offset - playerOne.height;
+			}
+			else if (playerOne.x < floors[i][0] + HOLE_WIDTH) {
+				playerOne.x = floors[i][0] + HOLE_WIDTH - playerOne.width;
+			}
+			else {
+				playerOne.x = floors[i][1];
+			}
+		}
+		else if (collision(floors[i][1] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset, CANVAS_WIDTH - floors[i][1] - HOLE_WIDTH, BLOCK_HEIGHT, playerOne.x, playerOne.y, playerOne.width, playerOne.height)) {
+			if (playerOne.y + playerOne.height - (i * FLOOR_HEIGHT - floor_offset) <= FALL_SPEED + SCROLL_SPEED) {
+				playerOne.y = i * FLOOR_HEIGHT - floor_offset - playerOne.height;
+			}
+			else {
+				playerOne.x = floors[i][1] + HOLE_WIDTH - playerOne.width;
+			}
+		}
+	}
 }
 
 function move_player2() {
@@ -139,4 +172,10 @@ function draw_blocks() {
 		canvasOne.fillRect(floors[i][0] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset, floors[i][1] - floors[i][0] - HOLE_WIDTH, BLOCK_HEIGHT);
 		canvasOne.fillRect(floors[i][1] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset, CANVAS_WIDTH - floors[i][1] - HOLE_WIDTH, BLOCK_HEIGHT);
 	}
+}
+
+function collision(x1, y1, w1, h1, x2, y2, w2, h2) {
+	if (x1 + w1 <= x2 || x2 + w2 <= x1) return false;
+	if (y1 + h1 <= y2 || y2 + h2 <= y1) return false;
+	return true;
 }
