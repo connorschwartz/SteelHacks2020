@@ -9,7 +9,7 @@ canvasElement.appendTo('body');
 
 var FPS = 30;
 setInterval(function() {
-    PaymentRequestUpdateEvent();
+    update();
     draw();
 }, 1000/FPS);
 
