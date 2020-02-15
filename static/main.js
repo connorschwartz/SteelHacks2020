@@ -27,7 +27,7 @@ var rng2 = mulberry32(1);
 // Create a 2d array to hold locations where gaps start for each floor block
 var floorsOne = new Array(NUM_FLOORS);
 for (var i = 0; i < floorsOne.length; i++) {
-	floorsOne[i] = new Array(3);
+	floorsOne[i] = new Array(4);
 }
 // Create 2 random holes in each floor block
 for (var i = 0; i < floorsOne.length; i++) {
@@ -47,6 +47,8 @@ for (var i = 0; i < floorsOne.length; i++) {
 	if (rng1() < CHANCE_SLOWDOWN) {
 		floorsOne[i][2] = (CANVAS_WIDTH - SLOWDOWN_SIZE) * rng1();
 	}
+	totalFloorsOne++;
+	floorsOne[i][3] = totalFloorsOne;
 }
 
 // Create a 2d array to hold locations where gaps start for each floor block
@@ -72,6 +74,8 @@ for (var i = 0; i < floorsTwo.length; i++) {
 	if (rng2() < CHANCE_SLOWDOWN) {
 		floorsTwo[i][2] = (CANVAS_WIDTH - SLOWDOWN_SIZE) * rng2();
 	}
+	totalFloorsTwo++;
+	floorsTwo[i][3] = totalFloorsTwo;
 }
 
 var floor_offset_one = 0;
@@ -394,13 +398,14 @@ function update_blocks1() {
 		if (rng1() < CHANCE_SLOWDOWN) {
 			floorsOne[floorsOne.length - 1][2] = (CANVAS_WIDTH - SLOWDOWN_SIZE) * rng1();
 		}
+        totalFloorsOne++;
+		floorsOne[floorsTwo.length - 1][3] = totalFloorsOne;
 	}
 }
 
 function update_blocks2() {
 	// Create a new block if we've scrolled an entire floor length
 	if (floor_offset_two >= FLOOR_HEIGHT) {
-        totalFloorsTwo++;
 		for (var i = 0; i < floorsTwo.length - 1; i++) {
 			floorsTwo[i][0] = floorsTwo[i+1][0];
 			floorsTwo[i][1] = floorsTwo[i+1][1];
@@ -421,6 +426,8 @@ function update_blocks2() {
 		if (rng2() < CHANCE_SLOWDOWN) {
 			floorsTwo[floorsTwo.length - 1][2] = (CANVAS_WIDTH - SLOWDOWN_SIZE) * rng2();
 		}
+        totalFloorsTwo++;
+		floorsTwo[floorsTwo.length - 1][3] = totalFloorsTwo;
 	}
 }
 
