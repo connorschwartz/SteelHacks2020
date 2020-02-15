@@ -188,7 +188,6 @@ function draw() {
     playerOne.draw();
     playerTwo.draw();
     draw_blocks();
-	canvasOne.fillRect(laps - slowed_time_one, 10, 10, 10);
  }
 
 var playerOne = {
