@@ -169,13 +169,15 @@ function update() {
 	//if (!playerTwoLost) move_player2();
 	
 	if (!playerOneLost) {
+		var move = 0;
 		if (laps - slowed_time_one < SLOW_DURATION) {
-			playerMovement = SLOW_SCROLL;
+			move = SLOW_SCROLL;
 		}
 		else {
-			playerMovement = scroll_speed_one;
+			move = scroll_speed_one;
 		}
-		floor_offset_one = floor_offset_one + playerMovement;
+		floor_offset_one = floor_offset_one + move;
+		playerMovement += move;
 	}
 	if (!playerTwoLost) {
 		floor_offset_two = floor_offset_two + opponentScroll;
@@ -519,8 +521,11 @@ function prepRandoms() {
 
 function startGame() {
 	setInterval(function() {
-		sendData(playerOne.x, playerOne.y, playerMovement, powerupDestroyed, playerOneLost, scoreOne);
-		powerupDestroyed = -1;
+		if (laps % 4 == 0) {
+			sendData(playerOne.x, playerOne.y, playerMovement, powerupDestroyed, playerOneLost, scoreOne);
+			powerupDestroyed = -1;
+			playerMovement = 0;
+		}
 		check();
 		if(!gameOver) {
 			incrementTime();
