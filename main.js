@@ -256,7 +256,7 @@ function move_player1() {
 			}
 		}
 		
-		if (collision(floorsOne[i][2], i * FLOOR_HEIGHT - floor_offset_one - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE, playerOne.x, playerOne.y, playerOne.width, playerOne.height)) {
+		if (floorsOne[i][2] > 0 && collision(floorsOne[i][2], i * FLOOR_HEIGHT - floor_offset_one - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE, playerOne.x, playerOne.y, playerOne.width, playerOne.height)) {
 			floorsOne[i][2] = -1;
 			slowed_time_one = laps;
 		}
@@ -305,7 +305,7 @@ function move_player2() {
 			}
 		}
 		
-		if (collision(floorsTwo[i][2], i * FLOOR_HEIGHT - floor_offset_two - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE, playerTwo.x, playerTwo.y, playerTwo.width, playerTwo.height)) {
+		if (floorsTwo[i][2] > 0 && collision(floorsTwo[i][2], i * FLOOR_HEIGHT - floor_offset_two - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE, playerTwo.x, playerTwo.y, playerTwo.width, playerTwo.height)) {
 			floorsTwo[i][2] = -1;
 			slowed_time_two = laps;
 		}
