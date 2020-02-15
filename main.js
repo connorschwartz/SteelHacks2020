@@ -2,7 +2,7 @@ console.log("Code Running here");
 
 var CANVAS_WIDTH = 480;
 var CANVAS_HEIGHT = 400;
-var FLOOR_HEIGHT = 40;
+var FLOOR_HEIGHT = 70;
 var BLOCK_HEIGHT = 20;
 var HOLE_WIDTH = 40;
 var MIN_GAP = 20;
@@ -34,7 +34,7 @@ var canvasTwo = canvasElementTwo.get(0).getContext("2d");
 canvasElementOne.appendTo('#game1');
 canvasElementTwo.appendTo('#game2');
 
-var FPS = 30;
+var FPS = 60;
 setInterval(function() {
     update();
     draw();
@@ -44,17 +44,17 @@ function update() {
     //comment
     if (keydown.left) {
         if(playerOne.x >= 37)
-            playerOne.x -= 5;
+            playerOne.x -= 3;
     }
 
     if (keydown.right) {
         if(playerOne.x <= CANVAS_WIDTH - 37)
-            playerOne.x += 5;
+            playerOne.x += 3;
     }
 
     // playerOne.x = player.x.clamp(0, CANVAS_WIDTH - player.width);
  
-    floor_offset = floor_offset + 2;
+    floor_offset = floor_offset + 1;
 	update_blocks();
  }
 function draw() { 
