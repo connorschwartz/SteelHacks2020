@@ -21,8 +21,12 @@ var SCROLL_SPEEDUP = 0.0005;
 var totalFloorsOne = 0;
 var totalFloorsTwo = 0;
 
-var rng1 = mulberry32(1);
-var rng2 = mulberry32(1);
+var myRand = Math.floor(Math.Random() * 1000000);
+sendRand(myRand);
+var otherRand = getRand();
+
+var rng1 = mulberry32(myRand);
+var rng2 = mulberry32(otherRand);
 
 // Create a 2d array to hold locations where gaps start for each floor block
 var floorsOne = new Array(NUM_FLOORS);
@@ -104,6 +108,8 @@ canvasElementTwo.appendTo('#game2');
 var FPS = 60;
 var laps = 0;
 setInterval(function() {
+	sendData();
+	var data = getData();
     check();
     if(!gameOver) {
         incrementTime();
@@ -470,4 +476,20 @@ function mulberry32(a) {
       t ^= t + Math.imul(t ^ t >>> 7, t | 61);
       return ((t ^ t >>> 14) >>> 0) / 4294967296;
     }
+}
+
+function sendRand(randomNum) {
+	// Send randomNum (an integer)
+}
+
+function getRand() {
+	// recieve other person's random (an integer)
+}
+
+function sendData(x, y, shift, powerup, died) {
+	// Send x position (integer), y position (integer), vertical shift (integer), index of destroyed powerup (integer), whether the player died (bool)
+}
+
+function getData() {
+	// Receive other person's x position (integer), y position (integer), vertical shift (integer), index of destroyed powerup (integer), whether the player died (bool)
 }
