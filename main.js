@@ -52,6 +52,16 @@ function update() {
             playerOne.x += 5;
     }
 
+    if (keydown.a) {
+        if(playerTwo.x >= 37)
+            playerTwo.x -= 5;
+    }
+
+    if (keydown.d) {
+        if(playerTwo.x <= CANVAS_WIDTH - 37)
+            playerTwo.x += 5;
+    }
+
     // playerOne.x = player.x.clamp(0, CANVAS_WIDTH - player.width);
  
     floor_offset = floor_offset + 2;
