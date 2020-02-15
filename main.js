@@ -62,6 +62,7 @@ var floor_offset_one = 0;
 var floor_offset_two = 0;
 
 var gameOver = false;
+var time = 0;
 
 var canvasElementOne = $("<canvas width='" + CANVAS_WIDTH + "' height='" + CANVAS_HEIGHT + "'></canvas>");
 var canvasElementTwo = $("<canvas width='" + CANVAS_WIDTH + "' height='" + CANVAS_HEIGHT + "'></canvas>");
@@ -71,13 +72,27 @@ canvasElementOne.appendTo('#game1');
 canvasElementTwo.appendTo('#game2');
 
 var FPS = 60;
+var laps = 0;
 setInterval(function() {
+    incrementTime();
+    laps++;
     check();
     if(!gameOver) {
         update();
         draw();
     }
 }, 1000/FPS);
+
+function speedUp() {
+    SCROLL_SPEED += 0.0005;
+}
+
+function incrementTime() {
+    if(laps % 60 == 0) {
+        time++;
+        laps = 0;
+    }
+}
 
 function check() {
     //check if player one lost
@@ -114,6 +129,7 @@ function playerTwoWins() {
 
 function update() { 
     //comment
+    speedUp();
 	update_blocks();
 	move_player1();
 	move_player2();
