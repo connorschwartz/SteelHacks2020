@@ -87,6 +87,8 @@ var startTime = d.getTime();
 var currentTime = 1;
 var scoreOne = 0;
 var scoreTwo = 0;
+var playerOneLost = false;
+var playerTwoLost = false;
 
 var canvasElementOne = $("<canvas width='" + CANVAS_WIDTH + "' height='" + CANVAS_HEIGHT + "'></canvas>");
 var canvasElementTwo = $("<canvas width='" + CANVAS_WIDTH + "' height='" + CANVAS_HEIGHT + "'></canvas>");
@@ -136,8 +138,8 @@ getColorStyle = function(count) {
     }
 
 function updateScore() {
-    scoreOne += Math.floor((currentTime * Math.floor(INITIAL_SCROLL_SPEED)) / 1250);
-    scoreTwo += Math.floor((currentTime * Math.floor(INITIAL_SCROLL_SPEED)) / 1250);
+    if (!playerOneLost) scoreOne += Math.floor((currentTime * Math.floor(INITIAL_SCROLL_SPEED)) / 1250);
+    if (!playerTwoLost) scoreTwo += Math.floor((currentTime * Math.floor(INITIAL_SCROLL_SPEED)) / 1250);
 
     document.querySelector('#your_score').innerHTML="Score: " + scoreOne;
     
@@ -159,16 +161,20 @@ function incrementTime() {
 function check() {
     //check if player one lost
     if(playerOne.y < 0) {
-        playerTwoWins();
-        gameOver = true;
+        playerOneLost = true;
     }
-
 
     //check if player two lost
     if(playerTwo.y < 0) {
-        playerOneWins();
-        gameOver = true;
+        playerTwoLost = true;
     }
+	
+	// Check if game ended (both players lost)
+	if (playerOneLost && playerTwoLost) {
+		gameOver = true;
+		if (scoreOne > scoreTwo) playerOneWins();
+		else playerTwoWins();
+	}
 }
 
 function playerOneWins() {
@@ -195,20 +201,22 @@ function update() {
 	update_blocks();
 	move_player1();
 	move_player2();
-
-    // playerOne.x = player.x.clamp(0, CANVAS_WIDTH - player.width);
 	
-	if (laps - slowed_time_one < SLOW_DURATION) {
-		floor_offset_one = floor_offset_one + SLOW_SCROLL;
+	if (!playerOneLost) {
+		if (laps - slowed_time_one < SLOW_DURATION) {
+			floor_offset_one = floor_offset_one + SLOW_SCROLL;
+		}
+		else {
+			floor_offset_one = floor_offset_one + scroll_speed_one;
+		}
 	}
-    else {
-		floor_offset_one = floor_offset_one + scroll_speed_one;
-	}
-    if (laps - slowed_time_two < SLOW_DURATION) {
-		floor_offset_two = floor_offset_two + SLOW_SCROLL;
-	}
-	else {
-		floor_offset_two = floor_offset_two + scroll_speed_two;
+	if (!playerTwoLost) {
+		if (laps - slowed_time_two < SLOW_DURATION) {
+			floor_offset_two = floor_offset_two + SLOW_SCROLL;
+		}
+		else {
+			floor_offset_two = floor_offset_two + scroll_speed_two;
+		}
 	}
 }
 function draw() { 
@@ -245,6 +253,7 @@ var playerTwo = {
 };
 
 function move_player1() {
+    if (playerOneLost) return;
     if (keydown.a) {
 		playerOne.x = playerOne.x - PLAYER_SPEED;
         if(playerOne.x < 0) playerOne.x = 0;
@@ -288,14 +297,15 @@ function move_player1() {
 		if (floorsOne[i][2] > 0 && collision(floorsOne[i][2], i * FLOOR_HEIGHT - floor_offset_one - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE, playerOne.x, playerOne.y, playerOne.width, playerOne.height)) {
 			floorsOne[i][2] = -1;
             slowed_time_one = laps;
-            scoreOne += 100;
+            if (!playerOneLost) scoreOne += 100;
 		}
 	}
 	if (playerOne.y > CANVAS_HEIGHT - playerOne.height) playerOne.y = CANVAS_HEIGHT - playerOne.height;
 }
 
 function move_player2() {
-    if (keydown.left) {
+    if (playerTwoLost) return;
+	if (keydown.left) {
 		playerTwo.x -= PLAYER_SPEED;
         if(playerTwo.x < 0) playerTwo.x = 0;
     }
@@ -338,7 +348,7 @@ function move_player2() {
 		if (floorsTwo[i][2] > 0 && collision(floorsTwo[i][2], i * FLOOR_HEIGHT - floor_offset_two - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE, playerTwo.x, playerTwo.y, playerTwo.width, playerTwo.height)) {
 			floorsTwo[i][2] = -1;
             slowed_time_two = laps;
-            scoreTwo += 100;
+            if (!playerTwoLost) scoreTwo += 100;
 		}
 	}
 	if (playerTwo.y > CANVAS_HEIGHT - playerTwo.height) playerTwo.y = CANVAS_HEIGHT - playerTwo.height;
