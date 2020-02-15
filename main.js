@@ -11,7 +11,7 @@ var PLAYER_SPEED = 3;
 var FALL_SPEED = 2;
 var INITIAL_SCROLL_SPEED = 1;
 var SCROLL_SPEEDUP = 0.0005;
-var SLOW_DURATION = 300;	// Length of slowdown powerup
+var SLOW_DURATION = 60;	// Length of slowdown powerup
 var SLOW_SCROLL = 0.75;		// Speed during slowdowns
 var CHANCE_SLOWDOWN = 0.1;	// Chance of a slowdown powerup appearing
 var SLOWDOWN_SIZE = 10;		// Size of slowdown powerup
@@ -108,7 +108,6 @@ function speedUp() {
 function incrementTime() {
     if(laps % 60 == 0) {
         time++;
-        laps = 0;
     }
 }
 
@@ -153,10 +152,20 @@ function update() {
 	move_player2();
 
     // playerOne.x = player.x.clamp(0, CANVAS_WIDTH - player.width);
- 
-    floor_offset_one = floor_offset_one + scroll_speed_one;
-    floor_offset_two = floor_offset_two + scroll_speed_two;
- }
+	
+	if (laps - slowed_time_one < SLOW_DURATION) {
+		floor_offset_one = floor_offset_one + SLOW_SCROLL;
+	}
+    else {
+		floor_offset_one = floor_offset_one + scroll_speed_one;
+	}
+    if (laps - slowed_time_two < SLOW_DURATION) {
+		floor_offset_two = floor_offset_two + SLOW_SCROLL;
+	}
+	else {
+		floor_offset_two = floor_offset_two + scroll_speed_two;
+	}
+}
 function draw() { 
     //comment
     canvasOne.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -164,6 +173,7 @@ function draw() {
     playerOne.draw();
     playerTwo.draw();
     draw_blocks();
+	canvasOne.fillRect(laps - slowed_time_one, 10, 10, 10);
  }
 
 var playerOne = {
@@ -230,6 +240,11 @@ function move_player1() {
 				playerOne.x = floorsOne[i][1] + HOLE_WIDTH - playerOne.width;
 			}
 		}
+		
+		if (collision(floorsOne[i][2], i * FLOOR_HEIGHT - floor_offset_one - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE, playerOne.x, playerOne.y, playerOne.width, playerOne.height)) {
+			floorsOne[i][2] = -1;
+			slowed_time_one = laps;
+		}
 	}
 	if (playerOne.y > CANVAS_HEIGHT - playerOne.height) playerOne.y = CANVAS_HEIGHT - playerOne.height;
 }
@@ -273,6 +288,11 @@ function move_player2() {
 			else {
 				playerTwo.x = floorsTwo[i][1] + HOLE_WIDTH - playerTwo.width;
 			}
+		}
+		
+		if (collision(floorsTwo[i][2], i * FLOOR_HEIGHT - floor_offset_two - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE, playerTwo.x, playerTwo.y, playerTwo.width, playerTwo.height)) {
+			floorsTwo[i][2] = -1;
+			slowed_time_two = laps;
 		}
 	}
 	if (playerTwo.y > CANVAS_HEIGHT - playerTwo.height) playerTwo.y = CANVAS_HEIGHT - playerTwo.height;
@@ -343,7 +363,7 @@ function draw_blocks() {
 		canvasTwo.fillRect(floorsTwo[i][1] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset_two, CANVAS_WIDTH - floorsTwo[i][1] - HOLE_WIDTH, BLOCK_HEIGHT);
 		if (floorsTwo[i][2] > 0) {
 			canvasTwo.fillStyle = "00FF00";
-			canvasTwo.fillRect(floorsTwo[i][2], i * FLOOR_HEIGHT - floor_offset_one - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE);
+			canvasTwo.fillRect(floorsTwo[i][2], i * FLOOR_HEIGHT - floor_offset_two - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE);
 		}
 	}
 }
