@@ -17,6 +17,7 @@ var CHANCE_SLOWDOWN = 0.1;	// Chance of a slowdown powerup appearing
 var SLOWDOWN_SIZE = 10;		// Size of slowdown powerup
 var NUM_FLOORS = Math.ceil(CANVAS_HEIGHT/FLOOR_HEIGHT) + 1;		// Need one extra floor to help phase in and out
 var TEXT_SIZE = 250;
+var SCROLL_SPEEDUP = 0.0005;
 
 var rng1 = mulberry32(1);
 var rng2 = mulberry32(1);
@@ -93,7 +94,7 @@ canvasElementOne.appendTo('#game1');
 canvasElementTwo.appendTo('#game2');
 
 var FPS = 60;
-
+var laps = 0;
 setInterval(function() {
     check();
     if(!gameOver) {
@@ -101,11 +102,12 @@ setInterval(function() {
         update();
         draw();
     }
+    laps++;
 }, 1000/FPS);
 
 function updateScore() {
-    scoreOne = Math.floor((currentTime * Math.floor(SCROLL_SPEED)) / 100);
-    scoreTwo = Math.floor((currentTime * Math.floor(SCROLL_SPEED)) / 100);
+    scoreOne = Math.floor((currentTime * Math.floor(INITIAL_SCROLL_SPEED)) / 100);
+    scoreTwo = Math.floor((currentTime * Math.floor(INITIAL_SCROLL_SPEED)) / 100);
 
     document.querySelector('#your_score').innerHTML="Score: " + scoreOne;
     
