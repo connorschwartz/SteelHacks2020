@@ -363,20 +363,22 @@ function update_blocks() {
 }
 function draw_blocks() {
     for (var i = 0; i < floorsOne.length; i++) {
+		canvasOne.fillStyle = "#33aacc";
 		canvasOne.fillRect(0, i * FLOOR_HEIGHT - floor_offset_one, floorsOne[i][0], BLOCK_HEIGHT);
 		canvasOne.fillRect(floorsOne[i][0] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset_one, floorsOne[i][1] - floorsOne[i][0] - HOLE_WIDTH, BLOCK_HEIGHT);
 		canvasOne.fillRect(floorsOne[i][1] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset_one, CANVAS_WIDTH - floorsOne[i][1] - HOLE_WIDTH, BLOCK_HEIGHT);
 		if (floorsOne[i][2] > 0) {
-			canvasOne.fillStyle = "00FF00";
+			canvasOne.fillStyle = "#00FF00";
 			canvasOne.fillRect(floorsOne[i][2], i * FLOOR_HEIGHT - floor_offset_one - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE);
 		}
 	}
     for (var i = 0; i < floorsTwo.length; i++) {
+		canvasTwo.fillStyle = "#eb4f34";
 		canvasTwo.fillRect(0, i * FLOOR_HEIGHT - floor_offset_two, floorsTwo[i][0], BLOCK_HEIGHT);
 		canvasTwo.fillRect(floorsTwo[i][0] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset_two, floorsTwo[i][1] - floorsTwo[i][0] - HOLE_WIDTH, BLOCK_HEIGHT);
 		canvasTwo.fillRect(floorsTwo[i][1] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset_two, CANVAS_WIDTH - floorsTwo[i][1] - HOLE_WIDTH, BLOCK_HEIGHT);
 		if (floorsTwo[i][2] > 0) {
-			canvasTwo.fillStyle = "00FF00";
+			canvasTwo.fillStyle = "#00FF00";
 			canvasTwo.fillRect(floorsTwo[i][2], i * FLOOR_HEIGHT - floor_offset_two - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE);
 		}
 	}
