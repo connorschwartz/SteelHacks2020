@@ -25,7 +25,8 @@ prepNetwork()
 //need to wait until the other player is ready!
 var myRand = Math.floor(Math.random() * 1000000);
 sendRand(myRand);
-var otherRand = getRand();
+var otherRand = -1;
+while (otherRand == -1) ;
 
 var rng1 = mulberry32(myRand);
 var rng2 = mulberry32(otherRand);
@@ -117,7 +118,6 @@ var socket; // for network
 setInterval(function() {
 	sendData(playerOne.x, playerOne.y, playerMovement, powerupDestroyed, playerOneLost);
 	powerupDestroyed = -1;
-	var data = getData();
     check();
     if(!gameOver) {
         incrementTime();
@@ -233,7 +233,7 @@ function update() {
 	if (!playerOneLost) update_blocks1();
 	if (!playerTwoLost) update_blocks2();
 	if (!playerOneLost) move_player1();
-	if (!playerTwoLost) move_player2();
+	//if (!playerTwoLost) move_player2();
 	
 	if (!playerOneLost) {
 		if (laps - slowed_time_one < SLOW_DURATION) {
@@ -245,12 +245,8 @@ function update() {
 		floor_offset_one = floor_offset_one + playerMovement;
 	}
 	if (!playerTwoLost) {
-		if (laps - slowed_time_two < SLOW_DURATION) {
-			floor_offset_two = floor_offset_two + SLOW_SCROLL;
-		}
-		else {
-			floor_offset_two = floor_offset_two + scroll_speed_two;
-		}
+		floor_offset_two = floor_offset_two + opponentScroll;
+		opponentScroll = 0;
 	}
 }
 function draw() { 
@@ -495,6 +491,7 @@ function sendRand(randomNum) {
 
 function gotRand(randomNum) {
 	// recieve other person's random (an integer)
+	otherRand = randomNum;
 }
 
 function sendData(x, y, shift, powerup, died) {
@@ -504,6 +501,13 @@ function sendData(x, y, shift, powerup, died) {
 
 function gotData(x,y,shift,powerup,died) {
 	// Receive other person's x position (integer), y position (integer), vertical shift (integer), index of destroyed powerup (integer), whether the player died (bool)
+	playerTwo.x = x;
+	playerTwo.y = y;
+	opponentScroll = shift;
+	for (var i = 0; i < floorsTwo.length; i++) {
+		if (floorsTwo[i][3] == powerup) floorsTwo[i][2] = -1;
+	}
+	if (died) playerTwoLost = true;
 }
 
 
