@@ -270,7 +270,7 @@ function move_player1() {
 		
 		if (floorsOne[i][2] > 0 && collision(floorsOne[i][2], i * FLOOR_HEIGHT - floor_offset_one - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE, playerOne.x, playerOne.y, playerOne.width, playerOne.height)) {
 			floorsOne[i][2] = -1;
-			powerupDestroyed = i;
+			powerupDestroyed = floorsOne[i][3];
             slowed_time_one = laps;
             if (!playerOneLost) scoreOne += 100;
 		}
