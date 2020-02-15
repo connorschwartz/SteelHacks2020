@@ -432,7 +432,7 @@ function gotRand(randomNum) {
 
 function sendData(x, y, shift, powerup, died) {
 	// Send x position (integer), y position (integer), vertical shift (integer), index of destroyed powerup (integer), whether the player died (bool)
-	socket.emit('game data', JSON.stringify([x,y,shift,powerup,died]));
+	socket.emit('data', JSON.stringify([x,y,shift,powerup,died]));
 }
 
 function gotData(x,y,shift,powerup,died) {
