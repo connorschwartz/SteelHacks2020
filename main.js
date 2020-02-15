@@ -158,6 +158,7 @@ function move_player1() {
 			}
 		}
 	}
+	if (playerOne.y > CANVAS_HEIGHT - playerOne.height) playerOne.y = CANVAS_HEIGHT - playerOne.height;
 }
 
 function move_player2() {
@@ -201,6 +202,7 @@ function move_player2() {
 			}
 		}
 	}
+	if (playerTwo.y > CANVAS_HEIGHT - playerTwo.height) playerTwo.y = CANVAS_HEIGHT - playerTwo.height;
 }
 
 function update_blocks() {
