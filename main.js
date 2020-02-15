@@ -162,11 +162,13 @@ function check() {
     //check if player one lost
     if(playerOne.y < 0) {
         playerOneLost = true;
+		playerOneLoses();
     }
 
     //check if player two lost
     if(playerTwo.y < 0) {
         playerTwoLost = true;
+		playerTwoLoses();
     }
 	
 	// Check if game ended (both players lost)
@@ -177,6 +179,12 @@ function check() {
 	}
 }
 
+function playerOneLoses() {
+    canvasOne.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    canvasOne.font = "50px Arial";
+    canvasOne.fillText("Score: " + scoreOne, (CANVAS_WIDTH / 2) - 50, CANVAS_HEIGHT / 2);
+}
+
 function playerOneWins() {
     canvasOne.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     canvasTwo.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -184,6 +192,12 @@ function playerOneWins() {
     canvasTwo.font = "50px Arial";
     canvasOne.fillText("YOU WIN!", (CANVAS_WIDTH / 2) - 50, CANVAS_HEIGHT / 2);
     canvasTwo.fillText("YOU LOSE!", (CANVAS_WIDTH / 2) - 50, CANVAS_HEIGHT / 2);
+}
+
+function playerTwoLoses() {
+    canvasTwo.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    canvasTwo.font = "50px Arial";
+    canvasTwo.fillText("Score: " + scoreTwo, (CANVAS_WIDTH / 2) - 50, CANVAS_HEIGHT / 2);
 }
 
 function playerTwoWins() {
@@ -198,9 +212,10 @@ function playerTwoWins() {
 function update() { 
     //comment
     speedUp();
-	update_blocks();
-	move_player1();
-	move_player2();
+	if (!playerOneLost) update_blocks1();
+	if (!playerTwoLost) update_blocks2();
+	if (!playerOneLost) move_player1();
+	if (!playerTwoLost) move_player2();
 	
 	if (!playerOneLost) {
 		if (laps - slowed_time_one < SLOW_DURATION) {
@@ -221,11 +236,12 @@ function update() {
 }
 function draw() { 
     //comment
-    canvasOne.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    canvasTwo.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    playerOne.draw();
-    playerTwo.draw();
-    draw_blocks();
+    if (!playerOneLost) canvasOne.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    if (!playerTwoLost) canvasTwo.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    if (!playerOneLost) playerOne.draw();
+    if (!playerTwoLost) playerTwo.draw();
+    if (!playerOneLost) draw_blocks1();
+    if (!playerTwoLost) draw_blocks2();
  }
 
 var playerOne = {
@@ -354,7 +370,7 @@ function move_player2() {
 	if (playerTwo.y > CANVAS_HEIGHT - playerTwo.height) playerTwo.y = CANVAS_HEIGHT - playerTwo.height;
 }
 
-function update_blocks() {
+function update_blocks1() {
 	// Create a new block if we've scrolled an entire floor length
 	if (floor_offset_one >= FLOOR_HEIGHT) {
         totalFloorsOne++;
@@ -379,7 +395,9 @@ function update_blocks() {
 			floorsOne[floorsOne.length - 1][2] = (CANVAS_WIDTH - SLOWDOWN_SIZE) * rng1();
 		}
 	}
-	
+}
+
+function update_blocks2() {
 	// Create a new block if we've scrolled an entire floor length
 	if (floor_offset_two >= FLOOR_HEIGHT) {
         totalFloorsTwo++;
@@ -405,7 +423,8 @@ function update_blocks() {
 		}
 	}
 }
-function draw_blocks() {
+
+function draw_blocks1() {
     for (var i = 0; i < floorsOne.length; i++) {
         canvasOne.fillStyle = getColorStyle(laps / 4);
 		canvasOne.fillRect(0, i * FLOOR_HEIGHT - floor_offset_one, floorsOne[i][0], BLOCK_HEIGHT);
@@ -416,6 +435,9 @@ function draw_blocks() {
 			canvasOne.fillRect(floorsOne[i][2], i * FLOOR_HEIGHT - floor_offset_one - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE);
 		}
     }
+}
+
+function draw_blocks2() {
     for (var i = 0; i < floorsTwo.length; i++) {
         canvasTwo.fillStyle = getColorStyle(laps / 4);
 		canvasTwo.fillRect(0, i * FLOOR_HEIGHT - floor_offset_two, floorsTwo[i][0], BLOCK_HEIGHT);
