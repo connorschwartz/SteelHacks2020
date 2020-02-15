@@ -1,6 +1,9 @@
-var app = require('express')();
+var express = require('express')
+var app = express();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
+
+app.use(express.static('static'))
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
@@ -19,9 +22,19 @@ io.on('connection', function(socket){
 			counts[room] = 1;
 		}
 		console.log("joined", room);
-		io.to(socket.id).emit('count'," count " +  counts[room]);
+		if(counts[room] < 3){
+			io.to(socket.id).emit('count',counts[room]);
+			socket.join(room);
+			if(counts[room] == 2) {
+				socket.to(room).emit('start game', 'start!');
+			}
+		}
+		else {
+			counts[room] = 2;
+			io.to(socket.id).emit('count',3);
+		}
 		//socket.to(socket.id)
-		socket.join(room);
+		
 	})
 	socket.on('chat message', function(msg){
 		console.log('message', msg);
