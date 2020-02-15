@@ -91,8 +91,7 @@ getColorStyle = function(count) {
 
 function updateScore() {
     if (!playerOneLost) scoreOne += Math.floor((currentTime * Math.floor(INITIAL_SCROLL_SPEED)) / 1250);
-    if (!playerTwoLost) scoreTwo += Math.floor((currentTime * Math.floor(INITIAL_SCROLL_SPEED)) / 1250);
-
+    
     document.querySelector('#your_score').innerHTML="Score: " + scoreOne;
     
     document.querySelector('#their_score').innerHTML="Score: " + scoreTwo;
@@ -188,7 +187,15 @@ function draw() {
     if (!playerOneLost) canvasOne.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     if (!playerTwoLost) canvasTwo.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     if (!playerOneLost) playerOne.draw();
-    if (!playerTwoLost) playerTwo.draw();
+	console.log(playerTwo.x);
+	console.log(playerTwo.y);
+	console.log(playerTwoLost);
+    if (!playerTwoLost) {
+		console.log("this doesn't work");
+		console.log(playerTwo.x);
+		console.log(playerTwoLost);
+		playerTwo.draw();
+	}
     if (!playerOneLost) draw_blocks1();
     if (!playerTwoLost) draw_blocks2();
  }
@@ -214,6 +221,8 @@ var playerTwo = {
     draw: function() {
         canvasTwo.fillStyle = this.color;
         canvasTwo.fillRect(this.x, this.y, this.width, this.height);
+		console.log(this.x);
+		console.log(this.y);
     }
 };
 
@@ -430,12 +439,12 @@ function gotRand(randomNum) {
 	startGame();
 }
 
-function sendData(x, y, shift, powerup, died) {
+function sendData(x, y, shift, powerup, died, score) {
 	// Send x position (integer), y position (integer), vertical shift (integer), index of destroyed powerup (integer), whether the player died (bool)
-	socket.emit('data', JSON.stringify([x,y,shift,powerup,died]));
+	socket.emit('data', JSON.stringify([x,y,shift,powerup,died, score]));
 }
 
-function gotData(x,y,shift,powerup,died) {
+function gotData(x,y,shift,powerup,died,score) {
 	// Receive other person's x position (integer), y position (integer), vertical shift (integer), index of destroyed powerup (integer), whether the player died (bool)
 	playerTwo.x = x;
 	playerTwo.y = y;
@@ -443,10 +452,10 @@ function gotData(x,y,shift,powerup,died) {
 	for (var i = 0; i < floorsTwo.length; i++) {
 		if (floorsTwo[i][3] == powerup && floorsTwo[i][2] >= 0) {
 			floorsTwo[i][2] = -1;
-			scoreTwo += 100;
 		}
 	}
 	if (died) playerTwoLost = true;
+	scoreTwo = score;
 }
 
 function prepRandoms() {
@@ -510,7 +519,7 @@ function prepRandoms() {
 
 function startGame() {
 	setInterval(function() {
-		sendData(playerOne.x, playerOne.y, playerMovement, powerupDestroyed, playerOneLost);
+		sendData(playerOne.x, playerOne.y, playerMovement, powerupDestroyed, playerOneLost, scoreOne);
 		powerupDestroyed = -1;
 		check();
 		if(!gameOver) {
@@ -562,12 +571,14 @@ function prepNetwork(){
 
 	socket.on('data', function(msg) {
 		let arr = JSON.parse(msg);
+		console.log(arr);
 		let x = +arr[0];
 		let y = +arr[1];
 		let shift = +arr[2];
 		let powerup = +arr[3];
-		let died = arr[4] === "false" ? false : true;
-		gotData(x,y,shift,powerup,died);
+		let died = arr[4];
+		let score = +arr[5];
+		gotData(x,y,shift,powerup,died,score);
 	})
 
 }
