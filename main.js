@@ -18,6 +18,8 @@ var SLOWDOWN_SIZE = 10;		// Size of slowdown powerup
 var NUM_FLOORS = Math.ceil(CANVAS_HEIGHT/FLOOR_HEIGHT) + 1;		// Need one extra floor to help phase in and out
 var TEXT_SIZE = 250;
 var SCROLL_SPEEDUP = 0.0005;
+var totalFloorsOne = 0;
+var totalFloorsTwo = 0;
 
 var rng1 = mulberry32(1);
 var rng2 = mulberry32(1);
@@ -104,6 +106,34 @@ setInterval(function() {
     }
     laps++;
 }, 1000/FPS);
+
+getColorStyle = function(count) {
+    r = 256;
+    g = 0;
+    b = 0;
+    count = count %  1024
+    
+    if (count < 256){
+    g = count;
+    }
+    else if (count < 512) {
+    g = 256;
+    r = 256 - count % 256;
+    b = count % 256;
+    }
+    else if (count < 768) {
+    r= 0;
+    g = 256 - count % 256;
+    b = 256
+    }
+    else {
+        r = count % 256;
+      g = 0;
+      b = 256 - count % 256;
+    }
+    
+    return 'rgb('+r+',' + g + ',' + b + ')';
+    }
 
 function updateScore() {
     scoreOne += Math.floor((currentTime * Math.floor(INITIAL_SCROLL_SPEED)) / 1250);
@@ -317,6 +347,7 @@ function move_player2() {
 function update_blocks() {
 	// Create a new block if we've scrolled an entire floor length
 	if (floor_offset_one >= FLOOR_HEIGHT) {
+        totalFloorsOne++;
 		for (var i = 0; i < floorsOne.length - 1; i++) {
 			floorsOne[i][0] = floorsOne[i+1][0];
 			floorsOne[i][1] = floorsOne[i+1][1];
@@ -341,6 +372,7 @@ function update_blocks() {
 	
 	// Create a new block if we've scrolled an entire floor length
 	if (floor_offset_two >= FLOOR_HEIGHT) {
+        totalFloorsTwo++;
 		for (var i = 0; i < floorsTwo.length - 1; i++) {
 			floorsTwo[i][0] = floorsTwo[i+1][0];
 			floorsTwo[i][1] = floorsTwo[i+1][1];
@@ -365,20 +397,22 @@ function update_blocks() {
 }
 function draw_blocks() {
     for (var i = 0; i < floorsOne.length; i++) {
+        canvasOne.fillStyle = getColorStyle(laps / 4);
 		canvasOne.fillRect(0, i * FLOOR_HEIGHT - floor_offset_one, floorsOne[i][0], BLOCK_HEIGHT);
 		canvasOne.fillRect(floorsOne[i][0] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset_one, floorsOne[i][1] - floorsOne[i][0] - HOLE_WIDTH, BLOCK_HEIGHT);
 		canvasOne.fillRect(floorsOne[i][1] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset_one, CANVAS_WIDTH - floorsOne[i][1] - HOLE_WIDTH, BLOCK_HEIGHT);
 		if (floorsOne[i][2] > 0) {
-			canvasOne.fillStyle = "00FF00";
+            canvasOne.fillStyle = "#00FF00";
 			canvasOne.fillRect(floorsOne[i][2], i * FLOOR_HEIGHT - floor_offset_one - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE);
 		}
-	}
+    }
     for (var i = 0; i < floorsTwo.length; i++) {
+        canvasTwo.fillStyle = getColorStyle(laps / 4);
 		canvasTwo.fillRect(0, i * FLOOR_HEIGHT - floor_offset_two, floorsTwo[i][0], BLOCK_HEIGHT);
 		canvasTwo.fillRect(floorsTwo[i][0] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset_two, floorsTwo[i][1] - floorsTwo[i][0] - HOLE_WIDTH, BLOCK_HEIGHT);
 		canvasTwo.fillRect(floorsTwo[i][1] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset_two, CANVAS_WIDTH - floorsTwo[i][1] - HOLE_WIDTH, BLOCK_HEIGHT);
 		if (floorsTwo[i][2] > 0) {
-			canvasTwo.fillStyle = "00FF00";
+            canvasTwo.fillStyle = "#00FF00";
 			canvasTwo.fillRect(floorsTwo[i][2], i * FLOOR_HEIGHT - floor_offset_two - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE);
 		}
 	}
