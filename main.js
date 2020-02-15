@@ -12,28 +12,53 @@ var SCROLL_SPEED = 1;
 var FALL_SPEED = 2;
 var NUM_FLOORS = Math.ceil(CANVAS_HEIGHT/FLOOR_HEIGHT) + 1;		// Need one extra floor to help phase in and out
 
+var rng1 = mulberry32(1);
+var rng2 = mulberry32(1);
+
 // Create a 2d array to hold locations where gaps start for each floor block
-var floors = new Array(NUM_FLOORS);
-for (var i = 0; i < floors.length; i++) {
-	floors[i] = new Array(2);
+var floorsOne = new Array(NUM_FLOORS);
+for (var i = 0; i < floorsOne.length; i++) {
+	floorsOne[i] = new Array(2);
 }
 // Create 2 random holes in each floor block
-for (var i = 0; i < floors.length; i++) {
-	floors[i][0] = (CANVAS_WIDTH - HOLE_WIDTH) * Math.random();
-	floors[i][1] = (CANVAS_WIDTH - HOLE_WIDTH) * Math.random();
+for (var i = 0; i < floorsOne.length; i++) {
+	floorsOne[i][0] = (CANVAS_WIDTH - HOLE_WIDTH) * rng1();
+	floorsOne[i][1] = (CANVAS_WIDTH - HOLE_WIDTH) * rng1();
 	// Might have to create new ones repeatedly to avoid overlap
-	while (Math.abs(floors[i][0] - floors[i][1]) < HOLE_WIDTH + MIN_GAP) {
-		floors[i][1] = (CANVAS_WIDTH - HOLE_WIDTH) * Math.random();
+	while (Math.abs(floorsOne[i][0] - floorsOne[i][1]) < HOLE_WIDTH + MIN_GAP) {
+		floorsOne[i][1] = (CANVAS_WIDTH - HOLE_WIDTH) * rng1();
 	}
 	// Make sure gap 0 is to the left of gap 1
-	if (floors[i][0] > floors[i][1]) {
-		var temp = floors[i][0];
-		floors[i][0] = floors[i][1];
-		floors[i][1] = temp;
+	if (floorsOne[i][0] > floorsOne[i][1]) {
+		var temp = floorsOne[i][0];
+		floorsOne[i][0] = floorsOne[i][1];
+		floorsOne[i][1] = temp;
 	}
 }
 
-var floor_offset = 0;
+// Create a 2d array to hold locations where gaps start for each floor block
+var floorsTwo = new Array(NUM_FLOORS);
+for (var i = 0; i < floorsTwo.length; i++) {
+	floorsTwo[i] = new Array(2);
+}
+// Create 2 random holes in each floor block
+for (var i = 0; i < floorsTwo.length; i++) {
+	floorsTwo[i][0] = (CANVAS_WIDTH - HOLE_WIDTH) * rng2();
+	floorsTwo[i][1] = (CANVAS_WIDTH - HOLE_WIDTH) * rng2();
+	// Might have to create new ones repeatedly to avoid overlap
+	while (Math.abs(floorsTwo[i][0] - floorsTwo[i][1]) < HOLE_WIDTH + MIN_GAP) {
+		floorsTwo[i][1] = (CANVAS_WIDTH - HOLE_WIDTH) * rng2();
+	}
+	// Make sure gap 0 is to the left of gap 1
+	if (floorsTwo[i][0] > floorsTwo[i][1]) {
+		var temp = floorsTwo[i][0];
+		floorsTwo[i][0] = floorsTwo[i][1];
+		floorsTwo[i][1] = temp;
+	}
+}
+
+var floor_offset_one = 0;
+var floor_offset_two = 0;
 
 var canvasElementOne = $("<canvas width='" + CANVAS_WIDTH + "' height='" + CANVAS_HEIGHT + "'></canvas>");
 var canvasElementTwo = $("<canvas width='" + CANVAS_WIDTH + "' height='" + CANVAS_HEIGHT + "'></canvas>");
@@ -56,7 +81,8 @@ function update() {
 
     // playerOne.x = player.x.clamp(0, CANVAS_WIDTH - player.width);
  
-    floor_offset = floor_offset + SCROLL_SPEED;
+    floor_offset_one = floor_offset_one + SCROLL_SPEED;
+    floor_offset_two = floor_offset_two + SCROLL_SPEED;
  }
 function draw() { 
     //comment
@@ -103,32 +129,32 @@ function move_player1() {
     }
 	
 	playerOne.y = playerOne.y + FALL_SPEED;
-	for (var i = 0; i < floors.length; i++) {
-		if (collision(0, i * FLOOR_HEIGHT - floor_offset, floors[i][0], BLOCK_HEIGHT, playerOne.x, playerOne.y, playerOne.width, playerOne.height)) {
-			if (playerOne.y + playerOne.height - (i * FLOOR_HEIGHT - floor_offset) <= FALL_SPEED + SCROLL_SPEED) {
-				playerOne.y = i * FLOOR_HEIGHT - floor_offset - playerOne.height;
+	for (var i = 0; i < floorsOne.length; i++) {
+		if (collision(0, i * FLOOR_HEIGHT - floor_offset_one, floorsOne[i][0], BLOCK_HEIGHT, playerOne.x, playerOne.y, playerOne.width, playerOne.height)) {
+			if (playerOne.y + playerOne.height - (i * FLOOR_HEIGHT - floor_offset_one) <= FALL_SPEED + SCROLL_SPEED) {
+				playerOne.y = i * FLOOR_HEIGHT - floor_offset_one - playerOne.height;
 			}
 			else {
-				playerOne.x = floors[i][0];
+				playerOne.x = floorsOne[i][0];
 			}
 		}
-		else if (collision(floors[i][0] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset, floors[i][1] - floors[i][0] - HOLE_WIDTH, BLOCK_HEIGHT, playerOne.x, playerOne.y, playerOne.width, playerOne.height)) {
-			if (playerOne.y + playerOne.height - (i * FLOOR_HEIGHT - floor_offset) <= FALL_SPEED + SCROLL_SPEED) {
-				playerOne.y = i * FLOOR_HEIGHT - floor_offset - playerOne.height;
+		else if (collision(floorsOne[i][0] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset_one, floorsOne[i][1] - floorsOne[i][0] - HOLE_WIDTH, BLOCK_HEIGHT, playerOne.x, playerOne.y, playerOne.width, playerOne.height)) {
+			if (playerOne.y + playerOne.height - (i * FLOOR_HEIGHT - floor_offset_one) <= FALL_SPEED + SCROLL_SPEED) {
+				playerOne.y = i * FLOOR_HEIGHT - floor_offset_one - playerOne.height;
 			}
-			else if (playerOne.x < floors[i][0] + HOLE_WIDTH) {
-				playerOne.x = floors[i][0] + HOLE_WIDTH - playerOne.width;
+			else if (playerOne.x < floorsOne[i][0] + HOLE_WIDTH) {
+				playerOne.x = floorsOne[i][0] + HOLE_WIDTH - playerOne.width;
 			}
 			else {
-				playerOne.x = floors[i][1];
+				playerOne.x = floorsOne[i][1];
 			}
 		}
-		else if (collision(floors[i][1] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset, CANVAS_WIDTH - floors[i][1] - HOLE_WIDTH, BLOCK_HEIGHT, playerOne.x, playerOne.y, playerOne.width, playerOne.height)) {
-			if (playerOne.y + playerOne.height - (i * FLOOR_HEIGHT - floor_offset) <= FALL_SPEED + SCROLL_SPEED) {
-				playerOne.y = i * FLOOR_HEIGHT - floor_offset - playerOne.height;
+		else if (collision(floorsOne[i][1] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset_one, CANVAS_WIDTH - floorsOne[i][1] - HOLE_WIDTH, BLOCK_HEIGHT, playerOne.x, playerOne.y, playerOne.width, playerOne.height)) {
+			if (playerOne.y + playerOne.height - (i * FLOOR_HEIGHT - floor_offset_one) <= FALL_SPEED + SCROLL_SPEED) {
+				playerOne.y = i * FLOOR_HEIGHT - floor_offset_one - playerOne.height;
 			}
 			else {
-				playerOne.x = floors[i][1] + HOLE_WIDTH - playerOne.width;
+				playerOne.x = floorsOne[i][1] + HOLE_WIDTH - playerOne.width;
 			}
 		}
 	}
@@ -144,33 +170,88 @@ function move_player2() {
 		playerTwo.x += PLAYER_SPEED;
         if(playerTwo.x > CANVAS_WIDTH - PLAYER_SIZE) playerTwo.x = CANVAS_WIDTH - PLAYER_SIZE;
     }
+	
+	playerTwo.y = playerTwo.y + FALL_SPEED;
+	for (var i = 0; i < floorsTwo.length; i++) {
+		if (collision(0, i * FLOOR_HEIGHT - floor_offset_two, floorsTwo[i][0], BLOCK_HEIGHT, playerTwo.x, playerTwo.y, playerTwo.width, playerTwo.height)) {
+			if (playerTwo.y + playerTwo.height - (i * FLOOR_HEIGHT - floor_offset_two) <= FALL_SPEED + SCROLL_SPEED) {
+				playerTwo.y = i * FLOOR_HEIGHT - floor_offset_two - playerTwo.height;
+			}
+			else {
+				playerTwo.x = floorsTwo[i][0];
+			}
+		}
+		else if (collision(floorsTwo[i][0] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset_two, floorsTwo[i][1] - floorsTwo[i][0] - HOLE_WIDTH, BLOCK_HEIGHT, playerTwo.x, playerTwo.y, playerTwo.width, playerTwo.height)) {
+			if (playerTwo.y + playerTwo.height - (i * FLOOR_HEIGHT - floor_offset_two) <= FALL_SPEED + SCROLL_SPEED) {
+				playerTwo.y = i * FLOOR_HEIGHT - floor_offset_two - playerTwo.height;
+			}
+			else if (playerTwo.x < floorsTwo[i][0] + HOLE_WIDTH) {
+				playerTwo.x = floorsTwo[i][0] + HOLE_WIDTH - playerTwo.width;
+			}
+			else {
+				playerTwo.x = floorsTwo[i][1];
+			}
+		}
+		else if (collision(floorsTwo[i][1] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset_two, CANVAS_WIDTH - floorsTwo[i][1] - HOLE_WIDTH, BLOCK_HEIGHT, playerTwo.x, playerTwo.y, playerTwo.width, playerTwo.height)) {
+			if (playerTwo.y + playerTwo.height - (i * FLOOR_HEIGHT - floor_offset_two) <= FALL_SPEED + SCROLL_SPEED) {
+				playerTwo.y = i * FLOOR_HEIGHT - floor_offset_two - playerTwo.height;
+			}
+			else {
+				playerTwo.x = floorsTwo[i][1] + HOLE_WIDTH - playerTwo.width;
+			}
+		}
+	}
 }
 
 function update_blocks() {
 	// Create a new block if we've scrolled an entire floor length
-	if (floor_offset >= FLOOR_HEIGHT) {
-		for (var i = 0; i < floors.length - 1; i++) {
-			floors[i][0] = floors[i+1][0];
-			floors[i][1] = floors[i+1][1];
+	if (floor_offset_one >= FLOOR_HEIGHT) {
+		for (var i = 0; i < floorsOne.length - 1; i++) {
+			floorsOne[i][0] = floorsOne[i+1][0];
+			floorsOne[i][1] = floorsOne[i+1][1];
 		}
-		floors[floors.length - 1][0] = (CANVAS_WIDTH - HOLE_WIDTH) * Math.random();
-		floors[floors.length - 1][1] = (CANVAS_WIDTH - HOLE_WIDTH) * Math.random();
-		while (Math.abs(floors[i][0] - floors[i][1]) < HOLE_WIDTH + MIN_GAP) {
-			floors[floors.length - 1][1] = (CANVAS_WIDTH - HOLE_WIDTH) * Math.random();
+		floorsOne[floorsOne.length - 1][0] = (CANVAS_WIDTH - HOLE_WIDTH) * rng1();
+		floorsOne[floorsOne.length - 1][1] = (CANVAS_WIDTH - HOLE_WIDTH) * rng1();
+		while (Math.abs(floorsOne[i][0] - floorsOne[i][1]) < HOLE_WIDTH + MIN_GAP) {
+			floorsOne[floorsOne.length - 1][1] = (CANVAS_WIDTH - HOLE_WIDTH) * rng1();
 		}
-		if (floors[i][0] > floors[i][1]) {
-			var temp = floors[i][0];
-			floors[i][0] = floors[i][1];
-			floors[i][1] = temp;
+		if (floorsOne[i][0] > floorsOne[i][1]) {
+			var temp = floorsOne[i][0];
+			floorsOne[i][0] = floorsOne[i][1];
+			floorsOne[i][1] = temp;
 		}
-		floor_offset = floor_offset - FLOOR_HEIGHT;
+		floor_offset_one = floor_offset_one - FLOOR_HEIGHT;
+	}
+	
+	// Create a new block if we've scrolled an entire floor length
+	if (floor_offset_two >= FLOOR_HEIGHT) {
+		for (var i = 0; i < floorsTwo.length - 1; i++) {
+			floorsTwo[i][0] = floorsTwo[i+1][0];
+			floorsTwo[i][1] = floorsTwo[i+1][1];
+		}
+		floorsTwo[floorsTwo.length - 1][0] = (CANVAS_WIDTH - HOLE_WIDTH) * rng2();
+		floorsTwo[floorsTwo.length - 1][1] = (CANVAS_WIDTH - HOLE_WIDTH) * rng2();
+		while (Math.abs(floorsTwo[i][0] - floorsTwo[i][1]) < HOLE_WIDTH + MIN_GAP) {
+			floorsTwo[floorsTwo.length - 1][1] = (CANVAS_WIDTH - HOLE_WIDTH) * rng2();
+		}
+		if (floorsTwo[i][0] > floorsTwo[i][1]) {
+			var temp = floorsTwo[i][0];
+			floorsTwo[i][0] = floorsTwo[i][1];
+			floorsTwo[i][1] = temp;
+		}
+		floor_offset_two = floor_offset_two - FLOOR_HEIGHT;
 	}
 }
 function draw_blocks() {
-    for (var i = 0; i < floors.length; i++) {
-		canvasOne.fillRect(0, i * FLOOR_HEIGHT - floor_offset, floors[i][0], BLOCK_HEIGHT);
-		canvasOne.fillRect(floors[i][0] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset, floors[i][1] - floors[i][0] - HOLE_WIDTH, BLOCK_HEIGHT);
-		canvasOne.fillRect(floors[i][1] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset, CANVAS_WIDTH - floors[i][1] - HOLE_WIDTH, BLOCK_HEIGHT);
+    for (var i = 0; i < floorsOne.length; i++) {
+		canvasOne.fillRect(0, i * FLOOR_HEIGHT - floor_offset_one, floorsOne[i][0], BLOCK_HEIGHT);
+		canvasOne.fillRect(floorsOne[i][0] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset_one, floorsOne[i][1] - floorsOne[i][0] - HOLE_WIDTH, BLOCK_HEIGHT);
+		canvasOne.fillRect(floorsOne[i][1] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset_one, CANVAS_WIDTH - floorsOne[i][1] - HOLE_WIDTH, BLOCK_HEIGHT);
+	}
+    for (var i = 0; i < floorsTwo.length; i++) {
+		canvasTwo.fillRect(0, i * FLOOR_HEIGHT - floor_offset_two, floorsTwo[i][0], BLOCK_HEIGHT);
+		canvasTwo.fillRect(floorsTwo[i][0] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset_two, floorsTwo[i][1] - floorsTwo[i][0] - HOLE_WIDTH, BLOCK_HEIGHT);
+		canvasTwo.fillRect(floorsTwo[i][1] + HOLE_WIDTH, i * FLOOR_HEIGHT - floor_offset_two, CANVAS_WIDTH - floorsTwo[i][1] - HOLE_WIDTH, BLOCK_HEIGHT);
 	}
 }
 
@@ -178,4 +259,13 @@ function collision(x1, y1, w1, h1, x2, y2, w2, h2) {
 	if (x1 + w1 <= x2 || x2 + w2 <= x1) return false;
 	if (y1 + h1 <= y2 || y2 + h2 <= y1) return false;
 	return true;
+}
+
+function mulberry32(a) {
+    return function() {
+      var t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
 }
