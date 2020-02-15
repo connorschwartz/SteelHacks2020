@@ -54,7 +54,6 @@ var floorsTwo;
 var rng1;
 var rng2;
 var otherRand = -1;
-var opponentScroll = 0;
 
 var myRand = Math.floor(Math.random() * 1000000);
 
@@ -178,10 +177,6 @@ function update() {
 		}
 		floor_offset_one = floor_offset_one + move;
 		playerMovement += move;
-	}
-	if (!playerTwoLost) {
-		floor_offset_two = floor_offset_two + opponentScroll;
-		opponentScroll = 0;
 	}
 }
 function draw() { 
@@ -450,7 +445,7 @@ function gotData(x,y,shift,powerup,died,score) {
 	// Receive other person's x position (integer), y position (integer), vertical shift (integer), index of destroyed powerup (integer), whether the player died (bool)
 	playerTwo.x = x;
 	playerTwo.y = y;
-	opponentScroll = shift;
+	floor_offset_two = floor_offset_two + shift;
 	for (var i = 0; i < floorsTwo.length; i++) {
 		if (floorsTwo[i][3] == powerup && floorsTwo[i][2] >= 0) {
 			floorsTwo[i][2] = -1;
