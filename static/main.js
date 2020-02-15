@@ -20,70 +20,6 @@ var TEXT_SIZE = 250;
 var SCROLL_SPEEDUP = 0.0005;
 var totalFloorsOne = 0;
 var totalFloorsTwo = 0;
-
-prepNetwork()
-//need to wait until the other player is ready!
-var myRand = Math.floor(Math.random() * 1000000);
-sendRand(myRand);
-var otherRand = getRand();
-
-var rng1 = mulberry32(myRand);
-var rng2 = mulberry32(otherRand);
-
-// Create a 2d array to hold locations where gaps start for each floor block
-var floorsOne = new Array(NUM_FLOORS);
-for (var i = 0; i < floorsOne.length; i++) {
-	floorsOne[i] = new Array(4);
-}
-// Create 2 random holes in each floor block
-for (var i = 0; i < floorsOne.length; i++) {
-	floorsOne[i][0] = (CANVAS_WIDTH - HOLE_WIDTH) * rng1();
-	floorsOne[i][1] = (CANVAS_WIDTH - HOLE_WIDTH) * rng1();
-	// Might have to create new ones repeatedly to avoid overlap
-	while (Math.abs(floorsOne[i][0] - floorsOne[i][1]) < HOLE_WIDTH + MIN_GAP) {
-		floorsOne[i][1] = (CANVAS_WIDTH - HOLE_WIDTH) * rng1();
-	}
-	// Make sure gap 0 is to the left of gap 1
-	if (floorsOne[i][0] > floorsOne[i][1]) {
-		var temp = floorsOne[i][0];
-		floorsOne[i][0] = floorsOne[i][1];
-		floorsOne[i][1] = temp;
-	}
-	floorsOne[i][2] = -1;
-	if (rng1() < CHANCE_SLOWDOWN) {
-		floorsOne[i][2] = (CANVAS_WIDTH - SLOWDOWN_SIZE) * rng1();
-	}
-	totalFloorsOne++;
-	floorsOne[i][3] = totalFloorsOne;
-}
-
-// Create a 2d array to hold locations where gaps start for each floor block
-var floorsTwo = new Array(NUM_FLOORS);
-for (var i = 0; i < floorsTwo.length; i++) {
-	floorsTwo[i] = new Array(3);
-}
-// Create 2 random holes in each floor block
-for (var i = 0; i < floorsTwo.length; i++) {
-	floorsTwo[i][0] = (CANVAS_WIDTH - HOLE_WIDTH) * rng2();
-	floorsTwo[i][1] = (CANVAS_WIDTH - HOLE_WIDTH) * rng2();
-	// Might have to create new ones repeatedly to avoid overlap
-	while (Math.abs(floorsTwo[i][0] - floorsTwo[i][1]) < HOLE_WIDTH + MIN_GAP) {
-		floorsTwo[i][1] = (CANVAS_WIDTH - HOLE_WIDTH) * rng2();
-	}
-	// Make sure gap 0 is to the left of gap 1
-	if (floorsTwo[i][0] > floorsTwo[i][1]) {
-		var temp = floorsTwo[i][0];
-		floorsTwo[i][0] = floorsTwo[i][1];
-		floorsTwo[i][1] = temp;
-	}
-	floorsTwo[i][2] = -1;
-	if (rng2() < CHANCE_SLOWDOWN) {
-		floorsTwo[i][2] = (CANVAS_WIDTH - SLOWDOWN_SIZE) * rng2();
-	}
-	totalFloorsTwo++;
-	floorsTwo[i][3] = totalFloorsTwo;
-}
-
 var floor_offset_one = 0;
 var floor_offset_two = 0;
 var scroll_speed_one = INITIAL_SCROLL_SPEED;
@@ -99,6 +35,8 @@ var scoreOne = 0;
 var scoreTwo = 0;
 var playerOneLost = false;
 var playerTwoLost = false;
+var playerMovement = 0;
+var powerupDestroyed = -1;
 
 var canvasElementOne = $("<canvas width='" + CANVAS_WIDTH + "' height='" + CANVAS_HEIGHT + "'></canvas>");
 var canvasElementTwo = $("<canvas width='" + CANVAS_WIDTH + "' height='" + CANVAS_HEIGHT + "'></canvas>");
@@ -111,18 +49,17 @@ var FPS = 60;
 var laps = 0;
 
 var socket; // for network
+var floorsOne;
+var floorsTwo;
+var rng1;
+var rng2;
+var otherRand = -1;
+var opponentScroll = 0;
 
-setInterval(function() {
-	sendData();
-	var data = getData();
-    check();
-    if(!gameOver) {
-        incrementTime();
-        update();
-        draw();
-    }
-    laps++;
-}, 1000/FPS);
+var myRand = Math.floor(Math.random() * 1000000);
+
+prepNetwork()
+//need to wait until the other player is ready!
 
 getColorStyle = function(count) {
     r = 256;
@@ -230,23 +167,20 @@ function update() {
 	if (!playerOneLost) update_blocks1();
 	if (!playerTwoLost) update_blocks2();
 	if (!playerOneLost) move_player1();
-	if (!playerTwoLost) move_player2();
+	//if (!playerTwoLost) move_player2();
 	
 	if (!playerOneLost) {
 		if (laps - slowed_time_one < SLOW_DURATION) {
-			floor_offset_one = floor_offset_one + SLOW_SCROLL;
+			playerMovement = SLOW_SCROLL;
 		}
 		else {
-			floor_offset_one = floor_offset_one + scroll_speed_one;
+			playerMovement = scroll_speed_one;
 		}
+		floor_offset_one = floor_offset_one + playerMovement;
 	}
 	if (!playerTwoLost) {
-		if (laps - slowed_time_two < SLOW_DURATION) {
-			floor_offset_two = floor_offset_two + SLOW_SCROLL;
-		}
-		else {
-			floor_offset_two = floor_offset_two + scroll_speed_two;
-		}
+		floor_offset_two = floor_offset_two + opponentScroll;
+		opponentScroll = 0;
 	}
 }
 function draw() { 
@@ -327,6 +261,7 @@ function move_player1() {
 		
 		if (floorsOne[i][2] > 0 && collision(floorsOne[i][2], i * FLOOR_HEIGHT - floor_offset_one - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE, playerOne.x, playerOne.y, playerOne.width, playerOne.height)) {
 			floorsOne[i][2] = -1;
+			powerupDestroyed = i;
             slowed_time_one = laps;
             if (!playerOneLost) scoreOne += 100;
 		}
@@ -490,6 +425,9 @@ function sendRand(randomNum) {
 
 function gotRand(randomNum) {
 	// recieve other person's random (an integer)
+	otherRand = randomNum;
+	prepRandoms();
+	startGame();
 }
 
 function sendData(x, y, shift, powerup, died) {
@@ -499,8 +437,90 @@ function sendData(x, y, shift, powerup, died) {
 
 function gotData(x,y,shift,powerup,died) {
 	// Receive other person's x position (integer), y position (integer), vertical shift (integer), index of destroyed powerup (integer), whether the player died (bool)
+	playerTwo.x = x;
+	playerTwo.y = y;
+	opponentScroll = shift;
+	for (var i = 0; i < floorsTwo.length; i++) {
+		if (floorsTwo[i][3] == powerup && floorsTwo[i][2] >= 0) {
+			floorsTwo[i][2] = -1;
+			scoreTwo += 100;
+		}
+	}
+	if (died) playerTwoLost = true;
 }
 
+function prepRandoms() {
+	rng1 = mulberry32(myRand);
+	rng2 = mulberry32(otherRand);
+
+	// Create a 2d array to hold locations where gaps start for each floor block
+	floorsOne = new Array(NUM_FLOORS);
+	for (var i = 0; i < floorsOne.length; i++) {
+		floorsOne[i] = new Array(4);
+	}
+	// Create 2 random holes in each floor block
+	for (var i = 0; i < floorsOne.length; i++) {
+		floorsOne[i][0] = (CANVAS_WIDTH - HOLE_WIDTH) * rng1();
+		floorsOne[i][1] = (CANVAS_WIDTH - HOLE_WIDTH) * rng1();
+		// Might have to create new ones repeatedly to avoid overlap
+		while (Math.abs(floorsOne[i][0] - floorsOne[i][1]) < HOLE_WIDTH + MIN_GAP) {
+			floorsOne[i][1] = (CANVAS_WIDTH - HOLE_WIDTH) * rng1();
+		}
+		// Make sure gap 0 is to the left of gap 1
+		if (floorsOne[i][0] > floorsOne[i][1]) {
+			var temp = floorsOne[i][0];
+			floorsOne[i][0] = floorsOne[i][1];
+			floorsOne[i][1] = temp;
+		}
+		floorsOne[i][2] = -1;
+		if (rng1() < CHANCE_SLOWDOWN) {
+			floorsOne[i][2] = (CANVAS_WIDTH - SLOWDOWN_SIZE) * rng1();
+		}
+		totalFloorsOne++;
+		floorsOne[i][3] = totalFloorsOne;
+	}
+
+	// Create a 2d array to hold locations where gaps start for each floor block
+	floorsTwo = new Array(NUM_FLOORS);
+	for (var i = 0; i < floorsTwo.length; i++) {
+		floorsTwo[i] = new Array(3);
+	}
+	// Create 2 random holes in each floor block
+	for (var i = 0; i < floorsTwo.length; i++) {
+		floorsTwo[i][0] = (CANVAS_WIDTH - HOLE_WIDTH) * rng2();
+		floorsTwo[i][1] = (CANVAS_WIDTH - HOLE_WIDTH) * rng2();
+		// Might have to create new ones repeatedly to avoid overlap
+		while (Math.abs(floorsTwo[i][0] - floorsTwo[i][1]) < HOLE_WIDTH + MIN_GAP) {
+			floorsTwo[i][1] = (CANVAS_WIDTH - HOLE_WIDTH) * rng2();
+		}
+		// Make sure gap 0 is to the left of gap 1
+		if (floorsTwo[i][0] > floorsTwo[i][1]) {
+			var temp = floorsTwo[i][0];
+			floorsTwo[i][0] = floorsTwo[i][1];
+			floorsTwo[i][1] = temp;
+		}
+		floorsTwo[i][2] = -1;
+		if (rng2() < CHANCE_SLOWDOWN) {
+			floorsTwo[i][2] = (CANVAS_WIDTH - SLOWDOWN_SIZE) * rng2();
+		}
+		totalFloorsTwo++;
+		floorsTwo[i][3] = totalFloorsTwo;
+	}
+}
+
+function startGame() {
+	setInterval(function() {
+		sendData(playerOne.x, playerOne.y, playerMovement, powerupDestroyed, playerOneLost);
+		powerupDestroyed = -1;
+		check();
+		if(!gameOver) {
+			incrementTime();
+			update();
+			draw();
+		}
+		laps++;
+	}, 1000/FPS);
+}
 
 //begin networking code
 function prepNetwork(){
@@ -520,6 +540,7 @@ function prepNetwork(){
 	  if(msg == 2)
 	  {
 		  alert('You are player 2, game starts now!');
+		  sendRand(myRand);
 		  $('#roomSelection').hide();
 	  }
 	  if(msg == 3)
@@ -529,6 +550,7 @@ function prepNetwork(){
 	});
 	socket.on('start game', function(msg){
 		alert('both players ready!  Begin')
+		sendRand(myRand);
 	})
 	socket.on('disconnected', function(msg) {
 		alert('other player disconnected');
