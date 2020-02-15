@@ -21,7 +21,7 @@ var SCROLL_SPEEDUP = 0.0005;
 var totalFloorsOne = 0;
 var totalFloorsTwo = 0;
 
-var myRand = Math.floor(Math.Random() * 1000000);
+var myRand = Math.floor(Math.random() * 1000000);
 sendRand(myRand);
 var otherRand = getRand();
 
@@ -97,6 +97,8 @@ var scoreOne = 0;
 var scoreTwo = 0;
 var playerOneLost = false;
 var playerTwoLost = false;
+var playerMovement = 0;
+var powerupDestroyed = -1;
 
 var canvasElementOne = $("<canvas width='" + CANVAS_WIDTH + "' height='" + CANVAS_HEIGHT + "'></canvas>");
 var canvasElementTwo = $("<canvas width='" + CANVAS_WIDTH + "' height='" + CANVAS_HEIGHT + "'></canvas>");
@@ -108,7 +110,8 @@ canvasElementTwo.appendTo('#game2');
 var FPS = 60;
 var laps = 0;
 setInterval(function() {
-	sendData();
+	sendData(playerOne.x, playerOne.y, playerMovement, powerupDestroyed, playerOneLost);
+	powerupDestroyed = -1;
 	var data = getData();
     check();
     if(!gameOver) {
@@ -229,11 +232,12 @@ function update() {
 	
 	if (!playerOneLost) {
 		if (laps - slowed_time_one < SLOW_DURATION) {
-			floor_offset_one = floor_offset_one + SLOW_SCROLL;
+			playerMovement = SLOW_SCROLL;
 		}
 		else {
-			floor_offset_one = floor_offset_one + scroll_speed_one;
+			playerMovement = scroll_speed_one;
 		}
+		floor_offset_one = floor_offset_one + playerMovement;
 	}
 	if (!playerTwoLost) {
 		if (laps - slowed_time_two < SLOW_DURATION) {
@@ -322,6 +326,7 @@ function move_player1() {
 		
 		if (floorsOne[i][2] > 0 && collision(floorsOne[i][2], i * FLOOR_HEIGHT - floor_offset_one - (FLOOR_HEIGHT - BLOCK_HEIGHT) / 2, SLOWDOWN_SIZE, SLOWDOWN_SIZE, playerOne.x, playerOne.y, playerOne.width, playerOne.height)) {
 			floorsOne[i][2] = -1;
+			powerupDestroyed = i;
             slowed_time_one = laps;
             if (!playerOneLost) scoreOne += 100;
 		}
