@@ -11,6 +11,7 @@ var PLAYER_SPEED = 3;
 var SCROLL_SPEED = 1;
 var FALL_SPEED = 2;
 var NUM_FLOORS = Math.ceil(CANVAS_HEIGHT/FLOOR_HEIGHT) + 1;		// Need one extra floor to help phase in and out
+var TEXT_SIZE = 250;
 
 var rng1 = mulberry32(1);
 var rng2 = mulberry32(1);
@@ -60,6 +61,8 @@ for (var i = 0; i < floorsTwo.length; i++) {
 var floor_offset_one = 0;
 var floor_offset_two = 0;
 
+var gameOver = false;
+
 var canvasElementOne = $("<canvas width='" + CANVAS_WIDTH + "' height='" + CANVAS_HEIGHT + "'></canvas>");
 var canvasElementTwo = $("<canvas width='" + CANVAS_WIDTH + "' height='" + CANVAS_HEIGHT + "'></canvas>");
 var canvasOne = canvasElementOne.get(0).getContext("2d");
@@ -69,9 +72,45 @@ canvasElementTwo.appendTo('#game2');
 
 var FPS = 60;
 setInterval(function() {
-    update();
-    draw();
+    check();
+    if(!gameOver) {
+        update();
+        draw();
+    }
 }, 1000/FPS);
+
+function check() {
+    //check if player one lost
+    if(playerOne.y < 0) {
+        playerTwoWins();
+        gameOver = true;
+    }
+
+
+    //check if player two lost
+    if(playerTwo.y < 0) {
+        playerOneWins();
+        gameOver = true;
+    }
+}
+
+function playerOneWins() {
+    canvasOne.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    canvasTwo.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    canvasOne.font = "50px Arial";
+    canvasTwo.font = "50px Arial";
+    canvasOne.fillText("YOU WIN!", (CANVAS_WIDTH / 2) - 50, CANVAS_HEIGHT / 2);
+    canvasTwo.fillText("YOU LOSE!", (CANVAS_WIDTH / 2) - 50, CANVAS_HEIGHT / 2);
+}
+
+function playerTwoWins() {
+    canvasOne.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    canvasTwo.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    canvasOne.font = "50px Arial";
+    canvasTwo.font = "50px Arial";
+    canvasOne.fillText("YOU LOSE!", (CANVAS_WIDTH / 2) - 50, CANVAS_HEIGHT / 2);
+    canvasTwo.fillText("YOU WIN!", (CANVAS_WIDTH / 2) - 50, CANVAS_HEIGHT / 2);
+}
 
 function update() { 
     //comment
