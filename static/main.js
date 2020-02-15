@@ -21,7 +21,9 @@ var SCROLL_SPEEDUP = 0.0005;
 var totalFloorsOne = 0;
 var totalFloorsTwo = 0;
 
-var myRand = Math.floor(Math.Random() * 1000000);
+prepNetwork()
+//need to wait until the other player is ready!
+var myRand = Math.floor(Math.random() * 1000000);
 sendRand(myRand);
 var otherRand = getRand();
 
@@ -107,6 +109,9 @@ canvasElementTwo.appendTo('#game2');
 
 var FPS = 60;
 var laps = 0;
+
+var socket; // for network
+
 setInterval(function() {
 	sendData();
 	var data = getData();
@@ -480,16 +485,67 @@ function mulberry32(a) {
 
 function sendRand(randomNum) {
 	// Send randomNum (an integer)
+	socket.emit('rand', randomNum);
 }
 
-function getRand() {
+function gotRand(randomNum) {
 	// recieve other person's random (an integer)
 }
 
 function sendData(x, y, shift, powerup, died) {
 	// Send x position (integer), y position (integer), vertical shift (integer), index of destroyed powerup (integer), whether the player died (bool)
+	socket.emit('game data', JSON.stringify([x,y,shift,powerup,died]));
 }
 
-function getData() {
+function gotData(x,y,shift,powerup,died) {
 	// Receive other person's x position (integer), y position (integer), vertical shift (integer), index of destroyed powerup (integer), whether the player died (bool)
+}
+
+
+//begin networking code
+function prepNetwork(){
+	socket = io();
+	$('#submitRoom').on('click', function(e) {
+		e.preventDefault();
+		if($('#room').val())
+			socket.emit('join room', $('#room').val());
+	})
+	socket.on('count', function(msg){
+	  msg = +msg;
+	  if(msg == 1)
+	  {
+		  alert('You are the first player, please wait');
+		  $('#roomSelection').hide();
+	  }
+	  if(msg == 2)
+	  {
+		  alert('You are player 2, game starts now!');
+		  $('#roomSelection').hide();
+	  }
+	  if(msg == 3)
+	  {
+		  alert('please try to select another room.  This one is full.')
+	  }
+	});
+	socket.on('start game', function(msg){
+		alert('both players ready!  Begin')
+	})
+	socket.on('disconnected', function(msg) {
+		alert('other player disconnected');
+	})
+
+	socket.on('rand', function(msg) {
+		gotRand(+msg);
+	})
+
+	socket.on('data', function(msg) {
+		let arr = JSON.parse(msg);
+		let x = +arr[0];
+		let y = +arr[1];
+		let shift = +arr[2];
+		let powerup = +arr[3];
+		let died = arr[4] === "false" ? false : true;
+		gotData(x,y,shift,powerup,died);
+	})
+
 }

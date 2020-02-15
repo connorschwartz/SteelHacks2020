@@ -13,42 +13,7 @@
 		<script src="/socket.io/socket.io.js"></script>
 	<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 		<script>
-				$(function () {
-				  var socket = io();
-				  $('#submitRoom').on('click', function(e) {
-					  e.preventDefault();
-					  socket.emit('join room', $('#room').val());
-				  })
-				//   $('form').submit(function(e){
-				// 	e.preventDefault(); // prevents page reloading
-				// 	socket.emit('chat message', $('#m').val());
-				// 	$('#m').val('');
-				// 	return false;
-				//   });
-				  socket.on('count', function(msg){
-					msg = +msg;
-					if(msg == 1)
-					{
-						alert('You are the first player, please wait');
-						$('#roomSelection').hide();
-					}
-					if(msg == 2)
-					{
-						alert('You are player 2, game starts now!');
-						$('#roomSelection').hide();
-					}
-					if(msg == 3)
-					{
-						alert('please try to select another room.  This one is full.')
-					}
-				  });
-				  socket.on('start game', function(msg){
-					  alert('both players ready!  Begin')
-				  })
-				//   socket.on('chat message', function(msg){
-				// 	$('#messages').append($('<li>').text(msg));
-				//   });
-				});
+				
 			  </script>
 		<title>Game</title>
 	</head>

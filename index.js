@@ -40,6 +40,21 @@ io.on('connection', function(socket){
 		console.log('message', msg);
 	  socket.to(room).broadcast.emit('chat message', msg);
 	});
+	socket.on('disconnect', function(){
+    if(room) {
+			socket.to(room).broadcast.emit('disconnected', 'the other player disconnected');
+		}
+	});
+	socket.on('rand', function(msg) {
+		if (room) { 
+			socket.to(room).broadcast.emit('rand', msg);
+		}
+	})
+	socket.on('data', function(msg) {
+		if(room) {
+			socket.to(room).broadcast.emit('data', msg);
+		}
+	})
   });
 
 http.listen(3000, function(){
