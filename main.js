@@ -62,7 +62,11 @@ var floor_offset_one = 0;
 var floor_offset_two = 0;
 
 var gameOver = false;
-var time = 0;
+var d = new Date();
+var startTime = d.getTime();
+var currentTime = 1;
+var scoreOne = 0;
+var scoreTwo = 0;
 
 var canvasElementOne = $("<canvas width='" + CANVAS_WIDTH + "' height='" + CANVAS_HEIGHT + "'></canvas>");
 var canvasElementTwo = $("<canvas width='" + CANVAS_WIDTH + "' height='" + CANVAS_HEIGHT + "'></canvas>");
@@ -72,26 +76,34 @@ canvasElementOne.appendTo('#game1');
 canvasElementTwo.appendTo('#game2');
 
 var FPS = 60;
-var laps = 0;
+
 setInterval(function() {
-    incrementTime();
-    laps++;
     check();
     if(!gameOver) {
+        incrementTime();
         update();
         draw();
     }
 }, 1000/FPS);
+
+function updateScore() {
+    scoreOne = Math.floor((currentTime * Math.floor(SCROLL_SPEED)) / 100);
+    scoreTwo = Math.floor((currentTime * Math.floor(SCROLL_SPEED)) / 100);
+
+    document.querySelector('#your_score').innerHTML="Score: " + scoreOne;
+    
+    document.querySelector('#their_score').innerHTML="Score: " + scoreTwo;
+}
 
 function speedUp() {
     SCROLL_SPEED += 0.0005;
 }
 
 function incrementTime() {
-    if(laps % 60 == 0) {
-        time++;
-        laps = 0;
-    }
+    var d2 = new Date();
+    currentTime = Math.floor(d2.getTime() - startTime);
+    if(currentTime % 5 == 0)
+        updateScore();
 }
 
 function check() {
